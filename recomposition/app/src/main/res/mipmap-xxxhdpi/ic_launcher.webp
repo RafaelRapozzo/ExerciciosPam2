@@ -1,0 +1,120 @@
+obs, instead of dying.
+
+=item *
+
+C<splice()> doesn't warn when truncating
+
+You can now limit the size of an array using C<splice(@a,MAX_LEN)> without
+worrying about warnings.
+
+=item *
+
+C<< $$ >> is no longer tainted.  Since this value comes directly from
+C<< getpid() >>, it is always safe.
+
+=item *
+
+The parser no longer leaks a filehandle if STDIN was closed before parsing
+started [perl #37033].
+
+=item *
+
+C<< die; >> with a non-reference, non-string, or magical (e.g., tainted)
+value in $@ now properly propagates that value [perl #111654].
+
+=back
+
+=head1 Known Problems
+
+=over 4
+
+=item *
+
+On Solaris, we have two kinds of failure.
+
+If F<make> is Sun's F<make>, we get an error about a badly formed macro
+assignment in the F<Makefile>.  That happens when F<./Configure> tries to
+make depends.  F<Configure> then exits 0, but further F<make>-ing fails.
+
+If F<make> is F<gmake>, F<Configure> completes, then we get errors related
+to F</usr/include/stdbool.h>
+
+=item *
+
+On Win32, a number of tests hang unless STDERR is redirected.  The cause of
+this is still under investigation.
+
+=item *
+
+When building as root with a umask that prevents files from being
+other-readable, F<t/op/filetest.t> will fail.  This is a test bug, not a
+bug in perl's behavior.
+
+=item *
+
+Configuring with a recent gcc and link-time-optimization, such as
+C<Configure -Doptimize='-O2 -flto'> fails
+because the optimizer optimizes away some of Configure's tests.  A
+workaround is to omit the C<-flto> flag when running Configure, but add
+it back in while actually building, something like
+
+    sh Configure -Doptimize=-O2                                             
+    make OPTIMIZE='-O2 -flto'                                               
+
+=item *
+
+The following CPAN modules have test failures with perl 5.16.  Patches have
+been submitted for all of these, so hopefully there will be new releases
+soon:
+
+=over
+
+=item *
+
+L<Date::Pcalc> version 6.1
+
+=item *
+
+L<Module::CPANTS::Analyse> version 0.85
+
+This fails due to problems in L<Module::Find> 0.10 and L<File::MMagic>
+1.27.
+
+=item *
+
+L<PerlIO::Util> version 0.72
+
+=back
+
+=back
+
+=head1 Acknowledgements
+
+Perl 5.16.0 represents approximately 12 months of development since Perl
+5.14.0 and contains approximately 590,000 lines of changes across 2,500
+files from 139 authors.
+
+Perl continues to flourish into its third decade thanks to a vibrant
+community of users and developers.  The following people are known to
+have contributed the improvements that became Perl 5.16.0:
+
+Aaron Crane, Abhijit Menon-Sen, Abigail, Alan Haggai Alavi, Alberto
+Simões, Alexandr Ciornii, Andreas König, Andy Dougherty, Aristotle
+Pagaltzis, Bo Johansson, Bo Lindbergh, Breno G. de Oliveira, brian d
+foy, Brian Fraser, Brian Greenfield, Carl Hayter, Chas. Owens,
+Chia-liang Kao, Chip Salzenberg, Chris 'BinGOs' Williams, Christian
+Hansen, Christopher J. Madsen, chromatic, Claes Jacobsson, Claudio
+Ramirez, Craig A. Berry, Damian Conway, Daniel Kahn Gillmor, Darin
+McBride, Dave Rolsky, David Cantrell, David Golden, David Leadbeater,
+David Mitchell, Dee Newcum, Dennis Kaarsemaker, Dominic Hargreaves,
+Douglas Christopher Wilson, Eric Brine, Father Chrysostomos, Florian
+Ragwitz, Frederic Briere, George Greer, Gerard Goossen, Gisle Aas,
+H.Merijn Brand, Hojung Youn, Ian Goodacre, James E Keenan, Jan Dubois,
+Jerry D. Hedden, Jesse Luehrs, Jesse Vincent, Jilles Tjoelker, Jim
+Cromie, Jim Meyering, Joel Berger, Johan Vromans, Johannes Plunien, John
+Hawkinson, John P. Linderman, John Peacock, Joshua ben Jore, Juerd
+Waalboer, Karl Williamson, Karthik Rajagopalan, Keith Thompson, Kevin J.
+Woolley, Kevin Ryde, Laurent Dami, Leo Lapworth, Leon Brocard, Leon
+Timmermans, Louis Strous, Lukas Mai, Marc Green, Marcel Grünauer, Mark
+A.  Stratman, Mark Dootson, Mark Jason Dominus, Martin Hasch, Matthew
+Horsfall, Max Maischein, Michael G 

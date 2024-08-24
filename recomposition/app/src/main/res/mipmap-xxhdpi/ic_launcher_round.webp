@@ -1,0 +1,188 @@
+.
+
+=item *
+
+C<study> is now a no-op, presumably fixing all outstanding bugs related to
+study causing regex matches to behave incorrectly!
+
+=item *
+
+When one writes C<open foo || die>, which used to work in Perl 4, a
+"Precedence problem" warning is produced.  This warning used erroneously to
+apply to fully-qualified bareword handle names not followed by C<||>.  This
+has been corrected.
+
+=item *
+
+After package aliasing (C<*foo:: = *bar::>), C<select> with 0 or 1 argument
+would sometimes return a name that could not be used to refer to the
+filehandle, or sometimes it would return C<undef> even when a filehandle
+was selected.  Now it returns a typeglob reference in such cases.
+
+=item *
+
+C<PerlIO::get_layers> no longer ignores some arguments that it thinks are
+numeric, while treating others as filehandle names.  It is now consistent
+for flat scalars (i.e., not references).
+
+=item *
+
+Unrecognized switches on C<#!> line
+
+If a switch, such as B<-x>, that cannot occur on the C<#!> line is used
+there, perl dies with "Can't emulate...".
+
+It used to produce the same message for switches that perl did not
+recognize at all, whether on the command line or the C<#!> line.
+
+Now it produces the "Unrecognized switch" error message [perl #104288].
+
+=item *
+
+C<system> now temporarily blocks the SIGCHLD signal handler, to prevent the
+signal handler from stealing the exit status [perl #105700].
+
+=item *
+
+The %n formatting code for C<printf> and C<sprintf>, which causes the number
+of characters to be assigned to the next argument, now actually
+assigns the number of characters, instead of the number of bytes.
+
+It also works now with special lvalue functions like C<substr> and with
+nonexistent hash and array elements [perl #3471, #103492].
+
+=item *
+
+Perl skips copying values returned from a subroutine, for the sake of
+speed, if doing so would make no observable difference.  Because of faulty
+logic, this would happen with the
+result of C<delete>, C<shift> or C<splice>, even if the result was
+referenced elsewhere.  It also did so with tied variables about to be freed
+[perl #91844, #95548].
+
+=item *
+
+C<utf8::decode> now refuses to modify read-only scalars [perl #91850].
+
+=item *
+
+Freeing $_ inside a C<grep> or C<map> block, a code block embedded in a
+regular expression, or an @INC filter (a subroutine returned by a
+subroutine in @INC) used to result in double frees or crashes
+[perl #91880, #92254, #92256].
+
+=item *
+
+C<eval> returns C<undef> in scalar context or an empty list in list
+context when there is a run-time error.  When C<eval> was passed a
+string in list context and a syntax error occurred, it used to return a
+list containing a single undefined element.  Now it returns an empty
+list in list context for all errors [perl #80630].
+
+=item *
+
+C<goto &func> no longer crashes, but produces an error message, when
+the unwinding of the current subroutine's scope fires a destructor that
+undefines the subroutine being "goneto" [perl #99850].
+
+=item *
+
+Perl now holds an extra reference count on the package that code is
+currently compiling in.  This means that the following code no longer
+crashes [perl #101486]:
+
+    package Foo;
+    BEGIN {*Foo:: = *Bar::}
+    sub foo;
+
+=item *
+
+The C<x> repetition operator no longer crashes on 64-bit builds with large
+repeat counts [perl #94560].
+
+=item *
+
+Calling C<require> on an implicit C<$_> when C<*CORE::GLOBAL::require> has
+been overridden does not segfault anymore, and C<$_> is now passed to the
+overriding subroutine [perl #78260].
+
+=item *
+
+C<use> and C<require> are no longer affected by the I/O layers active in
+the caller's scope (enabled by L<open.pm|open>) [perl #96008].
+
+=item *
+
+C<our $::é; $é> (which is invalid) no longer produces the "Compilation
+error at lib/utf8_heavy.pl..." error message, which it started emitting in
+5.10.0 [perl #99984].
+
+=item *
+
+On 64-bit systems, C<read()> now understands large string offsets beyond
+the 32-bit range.
+
+=item *
+
+Errors that occur when processing subroutine attributes no longer cause the
+subroutine's op tree to leak.
+
+=item *
+
+Passing the same constant subroutine to both C<index> and C<formline> no
+longer causes one or the other to fail [perl #89218]. (5.14.1)
+
+=item *
+
+List assignment to lexical variables declared with attributes in the same
+statement (C<my ($x,@y) : blimp = (72,94)>) stopped working in Perl 5.8.0.
+It has now been fixed.
+
+=item *
+
+Perl 5.10.0 introduced some faulty logic that made "U*" in the middle of
+a pack template equivalent to "U0" if the input string was empty.  This has
+been fixed [perl #90160]. (5.14.2)
+
+=item *
+
+Destructors on objects were not called during global destruction on objects
+that were not referenced by any scalars.  This could happen if an array
+element were blessed (e.g., C<bless \$a[0]>) or if a closure referenced a
+blessed variable (C<bless \my @a; sub foo { @a }>).
+
+Now there is an extra pass during global destruction to fire destructors on
+any objects that might be left after the usual passes that check for
+objects referenced by scalars [perl #36347].
+
+=item *
+
+Fixed a case where it was possible that a freed buffer may have been read
+from when parsing a here document [perl #90128]. (5.14.1)
+
+=item *
+
+C<each(I<ARRAY>)> is now wrapped in C<defined(...)>, like C<each(I<HASH>)>,
+inside a C<while> condition [perl #90888].
+
+=item *
+
+A problem with context propagation when a C<do> block is an argument to
+C<return> has been fixed.  It used to cause C<undef> to be returned in
+certain cases of a C<return> inside an C<if> block which itself is followed by
+another C<return>.
+
+=item *
+
+Calling C<index> with a tainted constant no longer causes constants in
+subsequently compiled code to become tainted [perl #64804].
+
+=item *
+
+Infinite loops like C<1 while 1> used to stop C<strict 'subs'> mode from
+working for the rest of the block.
+
+=item *
+
+For list assignments like C<($a,$b) = ($b,$a)>, Perl has to make a copy of
+the
